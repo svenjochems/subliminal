@@ -2,6 +2,7 @@
 import codecs
 import logging
 import os
+import re
 
 import chardet
 import pysrt
@@ -253,3 +254,18 @@ def fix_line_ending(content):
 
     """
     return content.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+
+def filter_content(text, filter_set):
+    """Filter text based on filter input with regex replace.
+
+    :text
+    :param list filter_set: {regex search, regex replace}
+    :return: the filtered content
+    :rtype: byte
+
+    """
+    filteredText = text
+    for f in filter_set:
+        filteredText = re.sub(f[0], f[1], filteredText, flags=re.MULTILINE)
+
+    return str.encode(filteredText)

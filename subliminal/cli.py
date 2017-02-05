@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import csv
 
 from appdirs import AppDirs
 from babelfish import Error as BabelfishError, Language
@@ -22,6 +23,7 @@ from six.moves import configparser
 from subliminal import (AsyncProviderPool, Episode, Movie, Video, __version__, check_video, compute_score, get_scores,
                         provider_manager, refine, refiner_manager, region, save_subtitles, scan_video, scan_videos)
 from subliminal.core import ARCHIVE_EXTENSIONS, search_external_subtitles
+from subliminal.subtitle import filter_content
 
 logger = logging.getLogger(__name__)
 
@@ -284,6 +286,7 @@ def cache(ctx, clear_subliminal):
 @click.option('-s', '--single', is_flag=True, default=False, help='Save subtitle without language code in the file '
               'name, i.e. use .srt extension. Do not use this unless your media player requires it.')
 @click.option('-f', '--force', is_flag=True, default=False, help='Force download even if a subtitle already exist.')
+@click.option('-fi', '--filter', type=click.Path(), default=None, help='Path to csv file with regex to filter, format: pattern;replacement.')
 @click.option('-hi', '--hearing-impaired', is_flag=True, default=False, help='Prefer hearing impaired subtitles.')
 @click.option('-m', '--min-score', type=click.IntRange(0, 100), default=0, help='Minimum score for a subtitle '
               'to be downloaded (0 to 100).')
@@ -293,7 +296,7 @@ def cache(ctx, clear_subliminal):
 @click.option('-v', '--verbose', count=True, help='Increase verbosity.')
 @click.argument('path', type=click.Path(), required=True, nargs=-1)
 @click.pass_obj
-def download(obj, provider, refiner, language, age, directory, encoding, single, force, hearing_impaired, min_score,
+def download(obj, provider, refiner, language, age, directory, encoding, single, force, filter, hearing_impaired, min_score,
              max_workers, archives, verbose, path):
     """Download best subtitles.
 
@@ -406,6 +409,22 @@ def download(obj, provider, refiner, language, age, directory, encoding, single,
         if p.discarded_providers:
             click.secho('Some providers have been discarded due to unexpected errors: %s' %
                         ', '.join(p.discarded_providers), fg='yellow')
+
+    # filter subtitles
+    # todo: check file
+    # todo: print filter status bar
+    if filter:
+        filters = list()
+
+        # read file
+        with open(filter, newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter=';')
+            filters = list(reader)
+
+        for v, subtitles in downloaded_subtitles.items():
+            for i in range(len(subtitles)):
+                subtitles[i].content = filter_content(subtitles[i].text, filters)
+
 
     # save subtitles
     total_subtitles = 0
