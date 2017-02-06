@@ -411,19 +411,33 @@ def download(obj, provider, refiner, language, age, directory, encoding, single,
                         ', '.join(p.discarded_providers), fg='yellow')
 
     # filter subtitles
-    # todo: check file
     # todo: print filter status bar
     if filter:
-        filters = list()
+        if (os.path.isfile(filter)):
+            filters = list()
 
-        # read file
-        with open(filter, newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=';')
-            filters = list(reader)
+            try:
+                # read file
+                with open(filter, newline='') as csvfile:
+                    reader = csv.reader(csvfile, delimiter=';')
+                    filters = list(reader)
+                    for row in filters:
+                        if len(row) < 2:
+                            raise ValueError('Wrong number of columns specified')
 
-        for v, subtitles in downloaded_subtitles.items():
-            for i in range(len(subtitles)):
-                subtitles[i].content = filter_content(subtitles[i].text, filters)
+                # filter subtitle content
+                with click.progressbar(downloaded_subtitles.items(), label='Filtering subtitles') as bar:
+                    for v, subtitles in bar:
+                        for i in range(len(subtitles)):
+                            subtitles[i].content = filter_content(subtitles[i].text, filters)
+
+            except:
+                logger.exception('Error while reading filter file %s, skipping filtering', p)
+                click.secho('Error in filter file, skipping filtering', fg='red')
+
+        else:
+            logger.exception('Filter file not found, skipping filtering')
+            click.secho('Filter file not found, skipping filtering', fg='red')
 
 
     # save subtitles
