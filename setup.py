@@ -27,8 +27,8 @@ def find_version(*file_paths):
 # requirements
 setup_requirements = ['pytest-runner'] if {'pytest', 'test', 'ptr'}.intersection(sys.argv) else []
 
-install_requirements = ['guessit>=2.0.1', 'babelfish>=0.5.2', 'enzyme>=0.4.1', 'beautifulsoup4>=4.4.0',
-                        'requests>=2.0', 'click>=4.0', 'dogpile.cache>=0.6.0', 'stevedore>=1.0.0',
+install_requirements = ['guessit>=3.0.0', 'babelfish>=0.5.2', 'enzyme>=0.4.1', 'beautifulsoup4>=4.4.0',
+                        'requests>=2.0', 'click>=4.0', 'dogpile.cache>=0.6.0', 'stevedore>=1.20.0',
                         'chardet>=2.3.0', 'pysrt>=1.0.1', 'six>=1.9.0', 'appdirs>=1.3', 'rarfile>=2.7',
                         'pytz>=2012c']
 if sys.version_info < (3, 2):
@@ -60,30 +60,33 @@ setup(name='subliminal',
           'Programming Language :: Python :: 2',
           'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Multimedia :: Video'
       ],
       entry_points={
           'subliminal.providers': [
               'addic7ed = subliminal.providers.addic7ed:Addic7edProvider',
+              'argenteam = subliminal.providers.argenteam:ArgenteamProvider',
               'legendastv = subliminal.providers.legendastv:LegendasTVProvider',
               'opensubtitles = subliminal.providers.opensubtitles:OpenSubtitlesProvider',
               'podnapisi = subliminal.providers.podnapisi:PodnapisiProvider',
               'shooter = subliminal.providers.shooter:ShooterProvider',
-              'subscenter = subliminal.providers.subscenter:SubsCenterProvider',
               'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
               'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider'
           ],
           'subliminal.refiners': [
+              'hash = subliminal.refiners.hash:refine',
               'metadata = subliminal.refiners.metadata:refine',
               'omdb = subliminal.refiners.omdb:refine',
               'tvdb = subliminal.refiners.tvdb:refine'
           ],
           'babelfish.language_converters': [
               'addic7ed = subliminal.converters.addic7ed:Addic7edConverter',
+              'legendastv = subliminal.converters.legendastv:LegendasTVConverter',
               'shooter = subliminal.converters.shooter:ShooterConverter',
               'thesubdb = subliminal.converters.thesubdb:TheSubDBConverter',
               'tvsubtitles = subliminal.converters.tvsubtitles:TVsubtitlesConverter'

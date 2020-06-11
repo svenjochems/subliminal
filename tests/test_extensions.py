@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pkg_resources import EntryPoint, iter_entry_points
 
-from subliminal.extensions import RegistrableExtensionManager, provider_manager
+from subliminal.extensions import RegistrableExtensionManager, provider_manager, default_providers, disabled_providers
 
 
 def test_registrable_extension_manager_all_extensions():
@@ -10,7 +10,7 @@ def test_registrable_extension_manager_all_extensions():
     ])
     extensions = sorted(e.name for e in manager)
     assert len(extensions) == 9
-    assert extensions == ['addic7ed', 'de7cidda', 'legendastv', 'opensubtitles', 'podnapisi', 'shooter', 'subscenter',
+    assert extensions == ['addic7ed', 'argenteam', 'de7cidda', 'legendastv', 'opensubtitles', 'podnapisi', 'shooter',
                           'thesubdb', 'tvsubtitles']
 
 
@@ -19,12 +19,11 @@ def test_registrable_extension_manager_internal_extension():
         'addic7ed = subliminal.providers.addic7ed:Addic7edProvider',
         'opensubtitles = subliminal.providers.opensubtitles:OpenSubtitlesProvider',
         'podnapisi = subliminal.providers.podnapisi:PodnapisiProvider',
-        'subscenter = subliminal.providers.subscenter:SubsCenterProvider',
         'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
         'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider'
     ])
-    assert len(list(manager)) == 6
-    assert len(manager.internal_extensions) == 6
+    assert len(list(manager)) == 5
+    assert len(manager.internal_extensions) == 5
 
 
 def test_registrable_extension_manager_register():
@@ -40,18 +39,20 @@ def test_registrable_extension_manager_register():
 
 def test_registrable_extension_manager_unregister():
     manager = RegistrableExtensionManager('subliminal.test_providers', [
-        'subscenter = subliminal.providers.subscenter:SubsCenterProvider',
         'thesubdb = subliminal.providers.thesubdb:TheSubDBProvider',
         'tvsubtitles = subliminal.providers.tvsubtitles:TVsubtitlesProvider'
     ])
-    assert len(list(manager)) == 3
+    assert len(list(manager)) == 2
     manager.register('de7cidda = subliminal.providers.addic7ed:Addic7edProvider')
     manager.unregister('de7cidda = subliminal.providers.addic7ed:Addic7edProvider')
-    assert len(list(manager)) == 3
-    assert set(manager.names()) == {'subscenter', 'thesubdb', 'tvsubtitles'}
+    assert len(list(manager)) == 2
+    assert set(manager.names()) == {'thesubdb', 'tvsubtitles'}
 
 
 def test_provider_manager():
     setup_names = {ep.name for ep in iter_entry_points(provider_manager.namespace)}
     internal_names = {EntryPoint.parse(iep).name for iep in provider_manager.internal_extensions}
-    assert setup_names == internal_names
+    enabled_names = set(default_providers)
+    disabled_names = set(disabled_providers)
+    assert setup_names == enabled_names
+    assert internal_names == enabled_names | disabled_names
